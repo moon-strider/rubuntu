@@ -19,7 +19,7 @@ RUN sudo apt install -y build-essential python3 gnupg curl gcc g++ make cmake gi
 RUN echo "export PATH=/home/dkr/.local/bin:$PATH" >> /home/$USERNAME/.bashrc
 RUN source /home/$USERNAME/.bashrc
 
-RUN pip install requests socket
+RUN pip install requests
 #RUN pip install "fastapi[all]"
 #RUN pip install pydantic
 
