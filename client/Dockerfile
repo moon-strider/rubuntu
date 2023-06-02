@@ -20,8 +20,6 @@ RUN echo "export PATH=/home/dkr/.local/bin:$PATH" >> /home/$USERNAME/.bashrc
 RUN source /home/$USERNAME/.bashrc
 
 RUN pip install requests
-#RUN pip install "fastapi[all]"
-#RUN pip install pydantic
 
 COPY ./socket_client.py /home/$USERNAME/socket_client.py
 

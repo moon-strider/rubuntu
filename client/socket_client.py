@@ -3,7 +3,6 @@ import requests
 import socket
 
 
-# example data to send - text: "move forward"
 def client():
     host = 'lnsigo.mipt.ru'
     port = 10000
@@ -23,6 +22,5 @@ def client():
         print(f"Recieved: {data}")
 
         response = requests.request(method, f"http://{hostname}:5002/{endpoint}", headers=headers, data=data)
-        #print("")
 if __name__ == '__main__':
     client()
