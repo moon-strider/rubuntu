@@ -43,7 +43,7 @@ RUN sudo rosdep init
 RUN rosdep update
 
 RUN sudo apt install -y python3-pip
-#RUN pip install flask
+RUN pip install flask
 
 #RUN pip install "fastapi[all]"
 #RUN pip install pydantic
@@ -51,9 +51,11 @@ RUN sudo apt install -y python3-pip
 RUN cat /home/$USERNAME/.bashrc
 
 COPY ./listener.py /home/$USERNAME/listener.py
-#COPY ./flask_server.py /home/$USERNAME/flask_server.py
+COPY ./flask_server.py /home/$USERNAME/flask_server.py
 #COPY ./fapi_server.py /home/$USERNAME/fapi_server.py
-COPY ./socket_server.py /home/$USERNAME/socket_server.py
+
+COPY ./launch.sh /home/$USERNAME/launch.sh
+RUN chmod +x /home/$USERNAME/launch.sh
 
 RUN mkdir -p ~/catkin_ws/src
 RUN touch ~/catkin_init.sh
@@ -64,3 +66,5 @@ RUN chmod +x ~/catkin_init.sh
 RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 
 WORKDIR /home/$USERNAME/
+
+CMD ./launch.sh
