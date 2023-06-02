@@ -51,7 +51,7 @@ RUN pip install flask
 RUN cat /home/$USERNAME/.bashrc
 
 COPY ./listener.py /home/$USERNAME/listener.py
-COPY ./flask_server.py /home/$USERNAME/flask_server.py
+COPY ./flask_server.py /home/$USERNAME/server.py
 #COPY ./fapi_server.py /home/$USERNAME/fapi_server.py
 
 COPY ./launch.sh /home/$USERNAME/launch.sh
