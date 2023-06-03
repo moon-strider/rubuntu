@@ -3,7 +3,7 @@ import threading
 import rospy
 import json
 
-from std_msgs.msg import String​
+from std_msgs.msg import String
 from flask import Flask, request
 from flask import jsonify
 
