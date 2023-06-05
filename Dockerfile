@@ -9,11 +9,6 @@ ARG USER_GID=$USER_UID
 ENV ROS_FLASK_SERVER ${ROS_FLASK_SERVER}
 ENV SERVICE_PORT ${SERVICE_PORT}
 
-RUN mkdir /src
-
-COPY ./services/ros_flask_server /src/
-COPY ./common/ /src/common/
-
 RUN apt update
 
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata keyboard-configuration
@@ -24,6 +19,9 @@ RUN apt install -y gnupg curl ca-certificates
 
 RUN grep -E 'sudo|wheel' /etc/group
 
+COPY ./services/ros_flask_server /home/$USERNAME/
+COPY ./common/ /home/$USERNAME/common/
+
 USER $USERNAME
 
 SHELL ["/usr/bin/bash", "-c"]
@@ -31,9 +29,8 @@ SHELL ["/usr/bin/bash", "-c"]
 RUN sudo apt update
 RUN sudo apt install -y lsb-release build-essential python3 gcc g++ make cmake git python-is-python3 apt-utils nginx
 
-COPY ./services/ros_flask_server/requirements.txt /src/requirements.txt
 RUN sudo apt install -y python3-pip
-RUN pip install -r /src/requirements.txt
+RUN pip install -r /home/$USERNAME/requirements.txt
 
 RUN sudo apt install -y ufw
 
@@ -57,11 +54,7 @@ RUN pip install flask
 
 RUN cat /home/$USERNAME/.bashrc
 
-COPY ./listener.py /home/$USERNAME/listener.py
-COPY ./server.py /home/$USERNAME/server.py
-
-COPY ./launch.sh /home/$USERNAME/launch.sh
-RUN sudo chmod +x /home/$USERNAME/launch.sh
+#RUN sudo chmod +x /home/$USERNAME/launch.sh
 
 RUN mkdir -p ~/catkin_ws/src
 RUN touch ~/catkin_init.sh
@@ -73,4 +66,4 @@ RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 
 WORKDIR /home/$USERNAME/
 
-CMD sudo ./launch.sh
+CMD (trap 'kill 0' SIGINT; roscore & gunicorn --workers=1 server:app)
