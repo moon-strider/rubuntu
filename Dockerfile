@@ -1,12 +1,10 @@
 FROM ubuntu:20.04
 
-ARG ROS_FLASK_SERVER
 ARG SERVICE_PORT
 ARG USERNAME=dkr
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-ENV ROS_FLASK_SERVER ${ROS_FLASK_SERVER}
 ENV SERVICE_PORT ${SERVICE_PORT}
 
 RUN apt update
@@ -19,18 +17,18 @@ RUN apt install -y gnupg curl ca-certificates
 
 RUN grep -E 'sudo|wheel' /etc/group
 
-COPY ./services/ros_flask_server /home/$USERNAME/
+COPY ./services/ros_flask_server/* /home/$USERNAME/
 COPY ./common/ /home/$USERNAME/common/
 
 USER $USERNAME
 
-SHELL ["/usr/bin/bash", "-c"]
+SHELL ["/bin/bash", "-c"]
 
 RUN sudo apt update
 RUN sudo apt install -y lsb-release build-essential python3 gcc g++ make cmake git python-is-python3 apt-utils nginx
 
 RUN sudo apt install -y python3-pip
-RUN pip install -r /home/$USERNAME/requirements.txt
+RUN sudo pip install -r /home/$USERNAME/requirements.txt
 
 RUN sudo apt install -y ufw
 
@@ -50,20 +48,20 @@ RUN sudo apt install -y python3-rosdep python3-rosinstall python3-rosinstall-gen
 RUN sudo rosdep init
 RUN rosdep update
 
-RUN pip install flask
-
 RUN cat /home/$USERNAME/.bashrc
 
 #RUN sudo chmod +x /home/$USERNAME/launch.sh
 
-RUN mkdir -p ~/catkin_ws/src
-RUN touch ~/catkin_init.sh
-RUN echo "cd ~/catkin_ws && catkin_make && source devel/setup.bash && echo $ROS_PACKAGE_PATH && cd ~/catkin_ws/src && catkin_create_pkg ros_dream std_msgs rospy roscpp && cd ~/catkin_ws && catkin_make && source ~/catkin_ws/devel/setup.bash && source ~/.bashrc && mkdir ~/catkin_ws/src/ros_dream/scripts && mv ~/talker.py ~/catkin_ws/src/ros_dream/scripts/talker.py && mv ~/listener.py ~/catkin_ws/src/ros_dream/scripts/listener.py && cd ~/catkin_ws && catkin_make && cd ~ && source ~/catkin_ws/devel/setup.bash && roscore" >> ~/catkin_init.sh
+RUN mkdir -p /home/$USERNAME/catkin_ws/src
+RUN touch /home/$USERNAME/catkin_init.sh
+RUN echo "cd ~/catkin_ws && catkin_make && source devel/setup.bash && echo $ROS_PACKAGE_PATH && cd ~/catkin_ws/src && catkin_create_pkg ros_dream std_msgs rospy roscpp && cd ~/catkin_ws && catkin_make && source ~/catkin_ws/devel/setup.bash && source ~/.bashrc && mkdir ~/catkin_ws/src/ros_dream/scripts && mv ~/listener.py ~/catkin_ws/src/ros_dream/scripts/listener.py && cd ~/catkin_ws && catkin_make && cd ~ && source ~/catkin_ws/devel/setup.bash && roscore" >> /home/$USERNAME/catkin_init.sh
 
-RUN sudo chmod +x ~/catkin_init.sh
+RUN sudo chmod +x /home/$USERNAME/catkin_init.sh
 
-RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+RUN echo "source /home/dkr/catkin_ws/devel/setup.bash" >> /home/$USERNAME/.bashrc
+RUN source /home/$USERNAME/.bashrc
 
 WORKDIR /home/$USERNAME/
 
-CMD (trap 'kill 0' SIGINT; roscore & gunicorn --workers=1 server:app)
+CMD gunicorn -b 0.0.0.0:$SERVICE_PORT --workers=1 server:app
+#CMD (trap 'kill 0' SIGINT; ./catkin_init.sh && roscore & gunicorn --workers=1 server:app)

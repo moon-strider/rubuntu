@@ -1,23 +1,30 @@
 #!/usr/bin/env python3
 import threading
-import rospy
+#import rospy
+
+#from std_msgs.msg import String
+from flask import Flask, request
+from flask import jsonify
+
 import logging
 import time
+from os import getenv
 
-from std_msgs.msg import String
-from flask import Flask, request, jsonify
+import sentry_sdk
 
+
+sentry_sdk.init(getenv("SENTRY_DSN"))
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-talker = rospy.Publisher('talker', String, queue_size=1)
+#talker = rospy.Publisher('talker', String, queue_size=1)     # ROS CURRENTLY COMMENTED
 
-threading.Thread(target=lambda: rospy.init_node('listener', disable_signals=True)).start()
+#threading.Thread(target=lambda: rospy.init_node('listener', disable_signals=True)).start()
 
-VALID_COMMANDS = []
+VALID_COMMANDS = ['move_forward', 'move_backward'] # may be hardcoded for testing without client
 COMMAND_QUEUE = []
 EXECUTING_COMMAND = None
 
@@ -31,7 +38,7 @@ def respond_set_commands():
     st_time = time.perf_counter() #########################################################
     VALID_COMMANDS = list(map(lambda i: i.lower(), request.json.get("commands", [])))     #
     if not VALID_COMMANDS:                                                                #
-        logger.info(f"mint-server used did not send valid commands list," +               #
+        logger.info(f"mint-server user did not send valid commands list," +               #
                     "resetting to default")                                               #
     logger.info(f"mint-server `VALID_COMMANDS` set: {VALID_COMMANDS}")                    #
                                                                                           #
@@ -47,7 +54,7 @@ def respond_is_command_valid():
     st_time = time.perf_counter() #########################################################
                                                                                           #
     command = request.json.get("command", None)                                           #
-    results = {"result": command in VALID_COMMANDS}                                       #
+    results = {"result": any(item in command for item in VALID_COMMANDS)}                 #
     logger.info(f"mint-server `is_command_valid` results: {results}")                     #
                                                                                           #
     total_time = time.perf_counter() - st_time ############################################
@@ -62,7 +69,7 @@ def respond_perform_command():
     st_time = time.perf_counter() #########################################################
                                                                                           #
     command = request.json.get("command", None)                                           #
-    talker.publish(command)                                                               #
+    #talker.publish(command)                                                              #
     results = {"result": command in VALID_COMMANDS}                                       #
     COMMAND_QUEUE.append(command)                                                         #
     logger.info(f"mint-server `perform_command` {command} appended to queue?: {results}") #
