@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-talker = rospy.Publisher('talker', String, queue_size=1)     # ROS CURRENTLY COMMENTED
+talker = rospy.Publisher('talker', String, queue_size=1)
 
 threading.Thread(target=lambda: rospy.init_node('listener', disable_signals=True)).start()
 
