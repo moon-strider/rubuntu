@@ -5,7 +5,7 @@ from std_msgs.msg import String
 
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + "Recieved: %s", data.data)
-    # TODO: implement logic
+    # put logic here
 
 
 def listener():
